@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetic Molecular Theory Platformer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        canvas {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #0f3460;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(15, 52, 96, 0.5);
+        }
+
+        .dashboard {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 280px;
+            border: 2px solid #0f3460;
+        }
+
+        .dashboard h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 10px;
+        }
+
+        .stat-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border-left: 4px solid #00d9ff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d9ff;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+
+        .stat-unit {
+            font-size: 14px;
+            color: #888;
+            margin-left: 5px;
+        }
+
+        .platform-legend {
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .controls strong {
+            color: #00d9ff;
+        }
+
+        .goal {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #ffd700;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .goal-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+
+        #loadingScreen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 217, 255, 0.15);
+            border-top: 4px solid #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            font-family: 'Courier New', monospace;
+            font-size: 28px;
+            color: #00d9ff;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .loading-credit {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #888;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-title">Kinetic Platformer</div>
+        <div class="loading-credit">Created by Adrian Ibarra</div>
+    </div>
+
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div class="dashboard">
+            <h2>Adrian's Dashboard</h2>
+
+            <div class="stat-group">
+                <div class="stat-label">Temperature (T)</div>
+                <div class="stat-value">
+                    <span id="temperature">298</span>
+                    <span class="stat-unit">K</span>
+                </div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label">Kinetic Energy (KE)</div>
+                <div class="stat-value">
+                    <span id="kineticEnergy">0.00</span>
+                    <span class="stat-unit">J</span>
+                </div>
+                <div style="font-size: 11px; color: #888; margin-top: 8px;">
+                    KE = ½mv²
+                </div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label">Max Energy This Jump</div>
+                <div class="stat-value">
+                    <span id="maxJumpEnergy">0.00</span>
+                    <span class="stat-unit">J</span>
+                </div>
+                <div style="font-size: 11px; color: #888; margin-top: 8px;">
+                    Peak KE reached during jump
+                </div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label">Velocity (v)</div>
+                <div class="stat-value">
+                    <span id="velocity">0.00</span>
+                    <span class="stat-unit">m/s</span>
+                </div>
+            </div>
+
+            <div class="platform-legend">
+                <div class="stat-label" style="margin-bottom: 15px;">Platform Types</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #4fc3f7, #29b6f6);"></div>
+                    <span><strong>Ice</strong> (273K) - Low KE</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #90a4ae, #78909c);"></div>
+                    <span><strong>Ambient</strong> (298K) - Normal KE</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #ff5722, #f4511e);"></div>
+                    <span><strong>Heated</strong> (373K) - High KE</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <strong>Controls:</strong><br>
+                • Arrow Keys or WASD to move<br>
+                • Space/Up/W to jump<br>
+                • Physics change based on platform!
+            </div>
+
+            <div class="goal">
+                <div class="goal-title">Mission Objective:</div>
+                Navigate to the golden goal platform! Use HEATED platforms to gain enough kinetic energy for high jumps. Ice platforms will slow you down!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CANVAS SETUP
+        // ============================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ============================================
+        // CHEMISTRY CONSTANTS
+        // ============================================
+        // Temperature constants in Kelvin
+        const TEMP_ICE = 273;      // Ice platform - freezing point of water
+        const TEMP_AMBIENT = 298;  // Ambient platform - room temperature
+        const TEMP_HEATED = 373;   // Heated platform - boiling point of water
+
+        // Mass of our "molecule" player (in arbitrary units for game physics)
+        const PLAYER_MASS = 1.0;
+
+        // Jump energy tracking
+        let maxJumpEnergy = 0;
+        let isInAir = false;
+
+        // ============================================
+        // PLAYER OBJECT (Represents a Molecule)
+        // ============================================
+        const player = {
+            x: 60,                  // Position X
+            y: 440,                 // Position Y
+            width: 40,              // Player dimensions (LARGER for easier gameplay)
+            height: 40,
+            velocityX: 0,           // Horizontal velocity
+            velocityY: 0,           // Vertical velocity
+            mass: PLAYER_MASS,      // Mass for kinetic energy calculation
+            isOnGround: false,      // Is player touching a platform?
+            currentPlatform: null,  // Reference to current platform
+            currentTemp: TEMP_AMBIENT,  // Current temperature state
+            hasWon: false           // Prevents multiple win alerts
+        };
+
+        // ============================================
+        // PHYSICS MODIFIERS BASED ON TEMPERATURE
+        // ============================================
+        // These modifiers simulate kinetic molecular theory:
+        // - Higher temperature = more kinetic energy = faster movement
+        // - Lower temperature = less kinetic energy = slower movement
+
+        function getPhysicsModifier(temperature) {
+            switch(temperature) {
+                case TEMP_ICE:
+                    // ICE: Molecules move slowly, low kinetic energy
+                    return {
+                        jumpForce: -9,        // Reduced jump (low KE) - slightly easier
+                        moveSpeed: 2.2,       // Slower horizontal movement (more controllable)
+                        friction: 0.80,       // Higher friction (stops quickly)
+                        label: "ICE"
+                    };
+                case TEMP_AMBIENT:
+                    // AMBIENT: Normal molecular motion
+                    return {
+                        jumpForce: -11,       // Standard jump (slightly easier)
+                        moveSpeed: 3.2,       // Normal horizontal movement (more controllable)
+                        friction: 0.82,       // Higher friction (easier to control)
+                        label: "AMBIENT"
+                    };
+                case TEMP_HEATED:
+                    // HEATED: Molecules move rapidly, high kinetic energy
+                    return {
+                        jumpForce: -14,       // Powerful jump (high KE) - slightly reduced for control
+                        moveSpeed: 4.5,       // Fast horizontal movement (more controllable)
+                        friction: 0.85,       // Higher friction (easier to control even when energetic)
+                        label: "HEATED"
+                    };
+                default:
+                    return getPhysicsModifier(TEMP_AMBIENT);
+            }
+        }
+
+        // ============================================
+        // PLATFORM DEFINITION
+        // ============================================
+        // Each platform has a temperature that affects player physics
+        // EASIER LAYOUT: Wider platforms, closer together, more stepping stones
+        const platforms = [
+            // Safety floor - prevents instant death
+            { x: 0, y: 580, width: 800, height: 30, temp: TEMP_AMBIENT },
+
+            // Starting platform (Ambient) - WIDER
+            { x: 20, y: 500, width: 200, height: 20, temp: TEMP_AMBIENT },
+
+            // Ice platform series (low jumps) - WIDER and CLOSER
+            { x: 180, y: 480, width: 160, height: 20, temp: TEMP_ICE },
+            { x: 310, y: 460, width: 150, height: 20, temp: TEMP_ICE },
+
+            // Heated platform (needed for big jump) - WIDER
+            { x: 430, y: 450, width: 180, height: 20, temp: TEMP_HEATED },
+
+            // Medium height platform - stepping stone
+            { x: 580, y: 400, width: 200, height: 20, temp: TEMP_AMBIENT },
+
+            // Higher platform (requires heated jump) - WIDER
+            { x: 600, y: 330, width: 180, height: 20, temp: TEMP_AMBIENT },
+
+            // Stepping stone back
+            { x: 450, y: 300, width: 140, height: 20, temp: TEMP_ICE },
+
+            // Heated platform for big jump
+            { x: 280, y: 270, width: 160, height: 20, temp: TEMP_HEATED },
+
+            // Stepping stone
+            { x: 120, y: 230, width: 150, height: 20, temp: TEMP_AMBIENT },
+
+            // Final heated platform for goal - WIDER
+            { x: 30, y: 180, width: 180, height: 20, temp: TEMP_HEATED },
+
+            // Goal platform - WIDER
+            { x: 180, y: 110, width: 150, height: 20, temp: TEMP_AMBIENT, isGoal: true }
+        ];
+
+        // ============================================
+        // INPUT HANDLING
+        // ============================================
+        const keys = {
+            left: false,
+            right: false,
+            up: false
+        };
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case 'arrowleft':
+                case 'a':
+                    keys.left = true;
+                    break;
+                case 'arrowright':
+                case 'd':
+                    keys.right = true;
+                    break;
+                case 'arrowup':
+                case 'w':
+                case ' ':
+                    keys.up = true;
+                    e.preventDefault(); // Prevent page scroll
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch(e.key.toLowerCase()) {
+                case 'arrowleft':
+                case 'a':
+                    keys.left = false;
+                    break;
+                case 'arrowright':
+                case 'd':
+                    keys.right = false;
+                    break;
+                case 'arrowup':
+                case 'w':
+                case ' ':
+                    keys.up = false;
+                    break;
+            }
+        });
+
+        // ============================================
+        // GAME LOGIC
+        // ============================================
+
+        // Update player physics based on current temperature
+        function updatePlayer() {
+            const physics = getPhysicsModifier(player.currentTemp);
+
+            // HORIZONTAL MOVEMENT
+            // Apply movement based on kinetic energy level
+            if (keys.left) {
+                player.velocityX = -physics.moveSpeed;
+            } else if (keys.right) {
+                player.velocityX = physics.moveSpeed;
+            } else {
+                // Apply friction when no input (simulates energy loss)
+                player.velocityX *= physics.friction;
+            }
+
+            // JUMPING
+            // Only jump when on ground and jump key is pressed
+            if (keys.up && player.isOnGround) {
+                // Apply jump force based on temperature (KE = ½mv²)
+                // Higher temp = higher velocity = higher kinetic energy
+                player.velocityY = physics.jumpForce;
+                player.isOnGround = false;
+                // Reset max energy for this new jump
+                maxJumpEnergy = 0;
+                isInAir = true;
+            }
+
+            // GRAVITY
+            // Constant downward acceleration (REDUCED for easier gameplay)
+            player.velocityY += 0.35;
+
+            // Apply velocities to position
+            player.x += player.velocityX;
+            player.y += player.velocityY;
+
+            // Boundary checking
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) {
+                player.x = canvas.width - player.width;
+            }
+
+            // Reset ground state
+            player.isOnGround = false;
+            player.currentPlatform = null;
+
+            // COLLISION DETECTION WITH PLATFORMS
+            // More forgiving collision - allows landing even if slightly past the platform edge
+            for (let platform of platforms) {
+                // Check if player is colliding with platform
+                // Added extra tolerance (10px) for more forgiving collision
+                if (player.x + player.width - 10 > platform.x &&
+                    player.x + 10 < platform.x + platform.width &&
+                    player.y + player.height > platform.y &&
+                    player.y + player.height < platform.y + platform.height + 15 &&
+                    player.velocityY > 0) {
+
+                    // Land on platform
+                    player.y = platform.y - player.height;
+                    player.velocityY = 0;
+                    player.isOnGround = true;
+                    player.currentPlatform = platform;
+
+                    // UPDATE TEMPERATURE based on platform
+                    // This is the key chemistry concept: the environment affects molecular motion
+                    player.currentTemp = platform.temp;
+
+                    // Check if goal reached (only trigger once)
+                    if (platform.isGoal && !player.hasWon) {
+                        player.hasWon = true;  // Prevent multiple alerts
+                        setTimeout(() => {
+                            alert('🎉 Congratulations! You reached the goal!\n\nYou successfully used Kinetic Molecular Theory to navigate the platforms!');
+                            resetGame();
+                        }, 100);
+                    }
+                }
+            }
+
+            // Fall off screen - reset (more generous threshold)
+            if (player.y > canvas.height + 50) {
+                resetGame();
+            }
+        }
+
+        // Reset game to starting position
+        function resetGame() {
+            player.x = 60;
+            player.y = 440;  // Start higher on the platform
+            player.velocityX = 0;
+            player.velocityY = 0;
+            player.currentTemp = TEMP_AMBIENT;
+            player.hasWon = false;  // Reset win flag for replay
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw platforms with colors based on temperature
+            for (let i = 0; i < platforms.length; i++) {
+                const platform = platforms[i];
+
+                // Special styling for safety floor (first platform)
+                if (i === 0) {
+                    ctx.fillStyle = 'rgba(144, 164, 174, 0.3)'; // Semi-transparent ambient color
+                    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                    continue; // Skip the rest of the styling for the safety floor
+                }
+
+                if (platform.isGoal) {
+                    // Goal platform - golden gradient
+                    const gradient = ctx.createLinearGradient(
+                        platform.x, platform.y,
+                        platform.x + platform.width, platform.y + platform.height
+                    );
+                    gradient.addColorStop(0, '#ffd700');
+                    gradient.addColorStop(1, '#ffed4e');
+                    ctx.fillStyle = gradient;
+
+                    // Glow effect
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ffd700';
+                } else {
+                    // Color based on temperature
+                    switch(platform.temp) {
+                        case TEMP_ICE:
+                            const iceGradient = ctx.createLinearGradient(
+                                platform.x, platform.y,
+                                platform.x + platform.width, platform.y + platform.height
+                            );
+                            iceGradient.addColorStop(0, '#4fc3f7');
+                            iceGradient.addColorStop(1, '#29b6f6');
+                            ctx.fillStyle = iceGradient;
+                            break;
+                        case TEMP_AMBIENT:
+                            const ambientGradient = ctx.createLinearGradient(
+                                platform.x, platform.y,
+                                platform.x + platform.width, platform.y + platform.height
+                            );
+                            ambientGradient.addColorStop(0, '#90a4ae');
+                            ambientGradient.addColorStop(1, '#78909c');
+                            ctx.fillStyle = ambientGradient;
+                            break;
+                        case TEMP_HEATED:
+                            const heatGradient = ctx.createLinearGradient(
+                                platform.x, platform.y,
+                                platform.x + platform.width, platform.y + platform.height
+                            );
+                            heatGradient.addColorStop(0, '#ff5722');
+                            heatGradient.addColorStop(1, '#f4511e');
+                            ctx.fillStyle = heatGradient;
+
+                            // Add glow for heated platforms
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = '#ff5722';
+                            break;
+                    }
+                }
+
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                ctx.shadowBlur = 0; // Reset shadow
+
+                // Draw temperature label on platform
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.font = 'bold 11px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    platform.temp + 'K',
+                    platform.x + platform.width / 2,
+                    platform.y + 14
+                );
+            }
+
+            // Draw player (molecule)
+            const gradient = ctx.createRadialGradient(
+                player.x + player.width / 2,
+                player.y + player.height / 2,
+                5,
+                player.x + player.width / 2,
+                player.y + player.height / 2,
+                player.width / 2
+            );
+
+            // Player color based on current temperature state
+            switch(player.currentTemp) {
+                case TEMP_ICE:
+                    gradient.addColorStop(0, '#e1f5fe');
+                    gradient.addColorStop(1, '#4fc3f7');
+                    break;
+                case TEMP_AMBIENT:
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(1, '#90a4ae');
+                    break;
+                case TEMP_HEATED:
+                    gradient.addColorStop(0, '#ffeb3b');
+                    gradient.addColorStop(1, '#ff5722');
+                    break;
+            }
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(
+                player.x + player.width / 2,
+                player.y + player.height / 2,
+                player.width / 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+
+            // Draw velocity vector (visualization of movement)
+            if (Math.abs(player.velocityX) > 0.1 || Math.abs(player.velocityY) > 0.1) {
+                ctx.strokeStyle = '#00d9ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(player.x + player.width / 2, player.y + player.height / 2);
+                ctx.lineTo(
+                    player.x + player.width / 2 + player.velocityX * 3,
+                    player.y + player.height / 2 + player.velocityY * 2
+                );
+                ctx.stroke();
+            }
+        }
+
+        // ============================================
+        // CHEMISTRY DASHBOARD UPDATE
+        // ============================================
+        function updateDashboard() {
+            // Update temperature display
+            document.getElementById('temperature').textContent = player.currentTemp;
+
+            // Calculate velocity magnitude (√(vx² + vy²))
+            const velocityMagnitude = Math.sqrt(
+                player.velocityX * player.velocityX +
+                player.velocityY * player.velocityY
+            );
+
+            // Display velocity
+            document.getElementById('velocity').textContent = velocityMagnitude.toFixed(2);
+
+            // Calculate Kinetic Energy using KE = ½mv²
+            // This is the fundamental equation from kinetic molecular theory
+            const kineticEnergy = 0.5 * player.mass * velocityMagnitude * velocityMagnitude;
+
+            // Display kinetic energy
+            document.getElementById('kineticEnergy').textContent = kineticEnergy.toFixed(2);
+
+            // Track max energy during jump
+            if (isInAir) {
+                if (kineticEnergy > maxJumpEnergy) {
+                    maxJumpEnergy = kineticEnergy;
+                }
+                if (player.isOnGround) {
+                    isInAir = false;
+                }
+            }
+            document.getElementById('maxJumpEnergy').textContent = maxJumpEnergy.toFixed(2);
+        }
+
+        // ============================================
+        // GAME LOOP
+        // ============================================
+        function gameLoop() {
+            updatePlayer();
+            draw();
+            updateDashboard();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Loading screen - dismiss after 2.5 seconds
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => loadingScreen.remove(), 800);
+        }, 2500);
+
+        // Start the game
+        gameLoop();
+
+        // ============================================
+        // INITIAL MESSAGE
+        // ============================================
+        setTimeout(() => {
+            console.log('%c🧪 Kinetic Molecular Theory Platformer 🧪', 'font-size: 16px; font-weight: bold; color: #00d9ff;');
+            console.log('Temperature affects molecular motion!');
+            console.log('ICE (273K): Low kinetic energy = slow movement');
+            console.log('AMBIENT (298K): Normal kinetic energy = standard movement');
+            console.log('HEATED (373K): High kinetic energy = fast movement');
+            console.log('\nWatch the dashboard to see KE = ½mv² in action!');
+        }, 500);
+    </script>
+</body>
+</html>

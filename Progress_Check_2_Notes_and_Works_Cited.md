@@ -1,0 +1,17 @@
+Kinetic Molecular Theory is a scientific model that explains the behavior of gases by describing the behavior of molecules at a microscopic level. It was developed during the mid-19th century and connects observable properties - like pressure, temperature and volume (OpenStax, 2023). The main reason I want to include Kinetic Molecular theory in my project is because we can observe the properties of pressure, temperature and volume. In the game I will have a chemistry dashboard on the top right of the screen. It will have readouts of the temperature of the platforms in Kelvin and a Kinetic Energy reading that would be displayed in Joules. And then the last recording we would look at is the velocity. During the game we would see these values updating as the player moves the platforms.
+	KMT is built on five foundational assumptions about ideal gas behavior, and each of these postulates is reflected in the design of the game. The first states that gas particles are in constant, continuous, random motion and travel in straight lines until they collide with another particle of a surface (Lumen Learning, n.d.). The kinetic energy of any moving object has one formula, where kinetic energy is then measured in joules. It requires a velocity parameter in order to fully get this value (CK-12 Foundation, 2023). Using this formula we can now display this information on the chemistry dashboard. So when the player directly observes the kinetic energy, it will now be shown on the chemistry dashboard.
+	One of the greatest strengths of KMT is that it provides explanations for the classical gas laws that had been here for centuries. Boyle's law states that pressure is inversely proportional to volume at constant temperature. KMT explains this because compressing gas into a small space forces molecules to collide with the container more frequently (OpenStax, 2023). Charles law states that volume is proportional to temperature at constant pressure. And according to KMT faster moving molecules at higher temperatures require more space to maintain the same collision rate with the walls (Purdue University, n.d.). The game most clearly demonstrates Charlews law in action. In the heated zone the molecule's jump height increases and it moves into greater vertical space. Just as a heated gas expands to occupy more volume at constant pressure (Shahbaz & Cooley, 2023).
+
+---
+
+## Works Cited
+
+CK-12 Foundation. (2023). *Average kinetic energy and temperature*. CK-12. https://flexbooks.ck12.org/cbook/ck-12-chemistry-flexbook-2.0/section/13.5/primary/lesson/average-kinetic-energy-chem/
+
+Lumen Learning. (n.d.). *The kinetic-molecular theory*. Lumen Learning. https://courses.lumenlearning.com/chemistryformajors/chapter/the-kinetic-molecular-theory/
+
+OpenStax. (2023). *The kinetic-molecular theory*. OpenStax. https://openstax.org/books/chemistry-2e/pages/9-5-the-kinetic-molecular-theory
+
+Purdue University Department of Chemistry. (n.d.). *The kinetic molecular theory*. Purdue University. https://chemed.chem.purdue.edu/genchem/topicreview/bp/ch4/kinetic4.html
+
+Shahbaz, S., & Cooley, A. (2023, January 30). *Kinetic molecular theory of gases*. Chemistry LibreTexts. https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Supplemental_Modules_(Physical_and_Theoretical_Chemistry)/Physical_Properties_of_Matter/States_of_Matter/Properties_of_Gases/Kinetic_Theory_of_Gases/Kinetic_Molecular_Theory_of_Gases
